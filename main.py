@@ -21,7 +21,7 @@ def print_all_products(conn):
         return
 
     print("\nСписок всех товаров:")
-    print("ID   Название            Цена      Категория")
+    print("ID    Название             Цена       Категория")
     print("-" * 45)
     for product in products:
         print(f"{product[0]:<5} {product[1]:<20} {product[2]:<10} {product[3]:<10}")
@@ -37,7 +37,7 @@ def print_all_categories(conn):
         return
 
     print("\nСписок категорий:")
-    print("ID   Название  ")
+    print("ID    Название")
     print("-" * 15)
     for category in categories:
         print(f"{category[0]:<5} {category[1]:<20}")
@@ -57,20 +57,19 @@ def add_product(conn):
     price = int(price)
 
     print_all_categories(conn)
-    try:
-        category_id = int(input("Введите ID категории товара: "))
-    except:
+
+    if (category_id := input("Введите ID категории товара: ")).isdigit():
+        category_id = int(category_id)
+    else:
         print("ID категории должен быть числом!")
         return
 
-    # Проверяем существование категории
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM categories WHERE id = ?", (category_id,))
     if not cursor.fetchone():
         print("Категории с таким ID не существует!")
         return
 
-    # Добавляем товар
     cursor.execute(
         "INSERT INTO products (name, price, category_id) VALUES (?, ?, ?)",
         (name, price, category_id),
@@ -80,11 +79,9 @@ def add_product(conn):
 
 
 def add_category(conn):
-    """Добавляет новую категорию"""
     print("\nДобавление новой категории")
-    name = input("Введите название категории: ")
 
-    if not name:
+    if not (name := input("Введите название категории: ")):
         print("Название категории не может быть пустым!")
         return
 
@@ -95,24 +92,21 @@ def add_category(conn):
 
 
 def delete_product(conn):
-    """Удаляет товар по ID"""
     print("\nУдаление товара")
     print_all_products(conn)
 
-    try:
+    if (product_id := input("Введите ID товара для удаления: ")).isdigit():
         product_id = int(input("Введите ID товара для удаления: "))
-    except:
+    else:
         print("ID товара должен быть числом!")
         return
 
     cursor = conn.cursor()
-    # Проверяем существование товара
     cursor.execute("SELECT id FROM products WHERE id = ?", (product_id,))
     if not cursor.fetchone():
         print("Товара с таким ID не существует!")
         return
 
-    # Удаляем товар
     cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
     conn.commit()
     print("Товар успешно удален!")
